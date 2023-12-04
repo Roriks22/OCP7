@@ -1,6 +1,9 @@
 const http = require('http');
 const app = require('./app');
 
+// Variable pour se connecter sur mongodb
+require('dotenv').config();
+
 const normalizePort = val => {
   const port = parseInt(val, 10);
 
@@ -35,6 +38,7 @@ const errorHandler = error => {
   }
 };
 
+//  Création du serveur
 const server = http.createServer(app);
 
 server.on('error', errorHandler);
