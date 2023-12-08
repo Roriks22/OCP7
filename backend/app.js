@@ -1,8 +1,14 @@
 const express = require('express');
 const bodyParse = require('body-parser');
 const mongoose = require('mongoose');
+const path = require('path');
 const bodyParser = require('body-parser');
+const userRoutes = require('./routes/users');
 require('dotenv').config();
+
+// Import du fichier route pour les livres.
+
+const booksRoutes = require('./routes/books');
 
 // Connexion mongodb
 mongoose.set('strictQuery', false);
@@ -25,6 +31,11 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 
+// Toutes les routes seront disponible via cette API.
+
+app.use('/api/books', booksRoutes);
+app.use('/api/auth', userRoutes);
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 
 module.exports = app;
