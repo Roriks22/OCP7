@@ -4,6 +4,7 @@ const fs = require('fs');
 // Fonction pour ajouter un nouveau livre.
 
 exports.createBook = (req, res, next) => {
+    // Récupération des infos de la requête.
     const bookObject = JSON.parse(req.body.book);
     // Suppression du faux id envoyé par le front.
     delete bookObject._id;
@@ -24,6 +25,7 @@ exports.createBook = (req, res, next) => {
 // Fonction pour modifier un livre.
 
     exports.modifyBook = (req, res, next) => {
+        // Si l'image a été modifié... alors nouveau chemin d'accès.
         const bookObject = req.file ? {
             ...JSON.parse(req.body.book),
             imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
@@ -138,7 +140,9 @@ exports.createRating = (req, res, next) => {
 // Fonction pour récupérer les 3 premiers livres les mieux notés.
 
 exports.getBestRating = (req, res, next) => {
+    // Récupération de tous les livres.
     Book.find()
+    // Renvoyer seulement les 3 premiers qui ont les meilleurs notes.
     .sort({ averageRating: -1 })
     .limit(3)
     .then(books => res.status(200).json(books))
