@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
-const bodyParser = require('body-parser');
 const userRoutes = require('./routes/users');
 require('dotenv').config();
 
@@ -33,8 +32,8 @@ app.use(bodyParser.json());
 
 // Toutes les routes seront disponible via cette API.
 
-app.use('/api/books', booksRoutes);
 app.use('/api/auth', userRoutes);
+app.use('/api/books', booksRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 
