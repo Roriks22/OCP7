@@ -10,4 +10,4 @@ const userSchema = mongoose.Schema({
 // Utilisation de uniqueValidator qui est plugin qui ajoute une validation de pré-enregistrement pour les champs uniques dans un schéma Mongoose.
 userSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('User', userSchema);
