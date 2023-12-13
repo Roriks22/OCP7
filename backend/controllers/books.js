@@ -1,5 +1,6 @@
 const Book = require('../models/books');
 const fs = require('fs');
+const path = require('path');
 
 // Fonction pour ajouter un nouveau livre.
 
@@ -36,7 +37,7 @@ exports.createBook = (req, res, next) => {
             .then((book) => {
                 // Mettre une condition pour que ça soit seulement le créateur qui puisse modifier.
                 if (book.userId != req.auth.userId) {
-                    res.status(401).json({ message : 'Not authorized'});
+                    res.status(403).json({ message : 'Demande non autorisé.'});
                 } else {
                     // Séparation du nom d'image existant.
                     const filename = book.imageUrl.split('/images')[1];
@@ -62,7 +63,7 @@ exports.deleteBook = (req, res, next) => {
         .then(book => {
             // Condition pour que ce soit seulement le créateur du livre qui puisse supprimer.
             if (book.userId != req.auth.userId) {
-                res.status(401).json({message: 'Not authorized'});
+                res.status(403).json({message: 'Demande non autorisé.'});
             } else {
                 // Séparation du nom du fichier image.
                 const filename = book.imageUrl.split('/images/')[1];
@@ -79,14 +80,6 @@ exports.deleteBook = (req, res, next) => {
         });
  };
 
-//  Fonction liste de tous les livres.
-
-exports.getAllBooks = (req, res, next) => {
-    Book.find()
-    .then(books => res.status(200).json(books))
-    .catch(error => res.status(400).json({ error }));
-};
-
 // Fonction pour un seul livre.
 
 exports.getOneBook = (req, res, next) => {
@@ -95,47 +88,68 @@ exports.getOneBook = (req, res, next) => {
     .catch(error => res.status(404).json({ error }));
 };
 
+//  Fonction liste de tous les livres.
+
+exports.getAllBooks = (req, res, next) => {
+    Book.find()
+    .then(books => res.status(200).json(books))
+    .catch(error => res.status(400).json({ error }));
+};
+
 // Fonction pour noter un livre.
 
 exports.createRating = (req, res, next) => {
-    // Vérifier si la note est comprise entre 0 et 5.
-    if (0 <= req.body.rating <= 5) {
-        // On stocke la requête.
-        const ratingObject = { ...req.body, grade: req.body.rating };
-        // Suppression du faux _id envoyé par le front.
-        delete ratingObject._id;
-        // Récupération du livre dans lequel on veut ajouter une note.
-        Book.findOne({_id: req.params.id})
-            .then(book => {
-                // Variable regroupant toutes les userId ayant déjà noté le livre en question.
-                const newRatings = book.ratings;
-                const userIdArray = newRatings.map(rating => rating.userId);
-                // Vérifier que l'utilisateur n'a jamais noté le livre.
-                if (userIdArray.includes(req.auth.userId)) {
-                    res.status(403).json({ message : 'utilisateur non autorisé' });
-                } else {
-                    // Ajout de la note.
-                    newRatings.push(ratingObject);
-                    const totalRatings = book.ratings.length;
-                    const sumRatings = book.ratings.reduce(
-                        (sum, rating) => sum + rating.grade,
-                        0
-                    );
-                    // Faire une moyenne.
-                    const averageRating = (sumRatings / totalRatings);
-                    book.averageRating = averageRating;
-                    }})
-                    // Sauvegarder les modifications.
-                    Book.save()
-                        .then((updatedBook) => {
-                            res.status(200).json(updatedBook);
-                        })
-                        .catch((error) => {
-                            res.status(500).json({ error });
-                        })
-                .catch((error) => { res.status(400).json({ message: 'La note doit être comprise entre 1 et 5' });
-                });
-        };}
+
+    const { userId, rating } = req.body;
+    const user = req.body.userId;
+    // Stockage de la requête dans une constante
+    const ratingObject = { ...req.body, grade: req.body.rating };
+    // Suppression du faux _id envoyé par le front
+    delete ratingObject._id;
+
+// Vérifier si l'utilisateur est autorisé ou non.
+    if (user !== req.auth.userId) {
+        return res.status(403).json({ message: "Demande non autorisé." });
+    }
+
+    // Vérifier que la  note est comprise entre 0 et 5.
+    if (rating < 0 || rating > 5) {
+        return res.status(400).json({ error: "La note doit être comprise entre 0 et 5." });
+    }
+    // Récupération du livre auquel on veut ajouter une note.
+    Book.findOne({_id: req.params.id})
+        .then((book) => {
+            // Si introuvable... alors message d'erreur.
+            if (!book) {
+                return res.status(404).json({ error: "Ce livre est introuvable." });
+            }
+
+            // Vérifier si l'utilisateur a déjà noté le livre
+            const userRating = book.ratings.find(
+                (rating) => rating.userId === userId
+            );
+            // Si livre dejà noté alors message d'erreur.
+            if (userRating) {
+                return res.status(400).json({ error: "Vous avez déjà noté ce livre." });
+            }
+
+            // Ajouter la note à la liste de notation
+            book.ratings.push({ userId, grade: rating });
+
+            // Calculer la nouvelle note moyenne
+            const totalRatings = book.ratings.length;
+            const sumRatings = book.ratings.reduce(
+                (sum, rating) => sum + rating.grade,0);
+            const averageRating = (sumRatings / totalRatings);
+            book.averageRating = averageRating;
+
+            // Sauvegarder les modifications
+            book.save()
+                .then((updatedBook) => { res.status(200).json(updatedBook); })
+                .catch((error) => { res.status(400).json({ error });});
+        })
+        .catch((error) => { res.status(500).json({ error });});
+};
 
 // Fonction pour récupérer les 3 premiers livres les mieux notés.
 

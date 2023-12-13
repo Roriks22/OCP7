@@ -25,14 +25,14 @@ exports.login = (req, res, next) => {
         .then(user => {
             // Envoyer une erreur si l'user n'existe pas.
             if (!user) {
-                return res.status(401).json({ error: 'Utilisateur non trouvé !' });
+                return res.status(403).json({ error: 'Demande non autorisé.' });
             }
             // Comparer les password base de donnée et celui de la requête. 
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     // Si pas valide alors message d'erreur.
                     if (!valid) {
-                        return res.status(401).json({ error: 'Mot de passe incorrect !' });
+                        return res.status(403).json({ error: 'Demande non autorisé.' });
                     }
                     // Si valide alors renvoie d'un token et du userId.
                     res.status(200).json({
@@ -44,7 +44,7 @@ exports.login = (req, res, next) => {
                         )
                     });
                 })
-                .catch(error => res.status(500).json({ error }));
+                .catch(error => res.status(400).json({ error }));
         })
         .catch(error => res.status(500).json({ error }));
  };
