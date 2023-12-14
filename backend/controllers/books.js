@@ -15,7 +15,7 @@ exports.createBook = (req, res, next) => {
     const book = new Book ({
         ...bookObject,
         userId : req.auth.userId,
-        imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        imageUrl : `${req.protocol}://${req.get('host')}/images/optimisation_${req.file.filename}`,
         averageRating : bookObject.ratings[0].grade,
     });
     // L'enregistrer dans la base de donnée.
@@ -29,7 +29,7 @@ exports.createBook = (req, res, next) => {
         // Si l'image a été modifié... alors nouveau chemin d'accès.
         const bookObject = req.file ? {
             ...JSON.parse(req.body.book),
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+            imageUrl: `${req.protocol}://${req.get('host')}/images/optimisation_${req.file.filename}`
         } : { ...req.body };
         delete bookObject._userId;
         // Récupération du livre à modifier.
