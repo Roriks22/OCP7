@@ -39,7 +39,7 @@ module.exports.optimiseImage = (req, res, next) => {
   const sharpFilePath = path.join('images', `optimisation_${fileName}`);
 
   sharp(filePath)
-    .resize(400)
+    .resize({ width: 400, height: 400, fit: 'contain' })
     .toFile(sharpFilePath)
     .then(() => {
       // Remplacer le fichier original par le fichier redimensionné
