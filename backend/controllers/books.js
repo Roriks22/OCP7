@@ -39,7 +39,7 @@ exports.createBook = (req, res, next) => {
                 if (book.userId != req.auth.userId) {
                     res.status(403).json({ message : 'Demande non autorisé.'});
                 } else {
-                    // Séparation du nom d'image existant.
+                    // On coupe avec split le nom du fichier et on récupère le deuxième élément du tableau.
                     const filename = book.imageUrl.split('/images')[1];
                     // Si image modifiée alors on supprime l'ancienne.
                     req.file && fs.unlink(`images/${filename}`, (err => {
@@ -65,7 +65,7 @@ exports.deleteBook = (req, res, next) => {
             if (book.userId != req.auth.userId) {
                 res.status(403).json({message: 'Demande non autorisé.'});
             } else {
-                // Séparation du nom du fichier image.
+                // On coupe avec split le nom du fichier et on récupère le deuxième élément du tableau.
                 const filename = book.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, () => {
                     // Suppression du fichier image.

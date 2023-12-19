@@ -11,7 +11,7 @@ const MIME_TYPES = {
   'image/png': 'png'
 };
 
-// Utilisatio de diskStorage pour configurer le chemin et le nom de fichier pour les fichiers entrants.
+// Utilisation de diskStorage pour configurer le chemin et le nom de fichier pour les fichiers entrants.
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
     callback(null, 'images');
